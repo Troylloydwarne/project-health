@@ -8,6 +8,7 @@ import {
 import Dot from "./components/Dot";
 import PartnerDrawer from "./components/PartnerDrawer";
 import CoverageSummary from "./components/CoverageSummary";
+import DecisionTree from "./components/DecisionTree";
 
 const SORT_OPTIONS = [
   { key: "name", label: "Name" },
@@ -49,6 +50,7 @@ function tdStyle(overrides = {}) {
 }
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState("matrix");
   const [regionFilter, setRegionFilter] = useState("All");
   const [tierFilter, setTierFilter] = useState("All");
   const [sortKey, setSortKey] = useState("tier");
@@ -135,15 +137,15 @@ export default function App() {
               letterSpacing: "-0.5px",
               lineHeight: 1,
             }}>
-              Partner Capability Matrix
+              Partner Network
             </h1>
             <div style={{ marginTop: 8, fontSize: 11, color: "#5a6470" }}>
               {totalPrimary} primary · {totalSecondary} secondary · {partners.length} total active
             </div>
           </div>
 
-          {/* Search + filters */}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          {/* Search + filters — only shown on matrix tab */}
+          <div style={{ display: activeTab === "matrix" ? "flex" : "none", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             <input
               className="search-input"
               placeholder="Search partners..."
@@ -237,8 +239,44 @@ export default function App() {
           </div>
         )}
 
-        <div style={{ marginTop: 20, height: 1, background: "linear-gradient(90deg, #4da6ff33, #1e2530, transparent)" }} />
+        {/* Tab bar */}
+        <div style={{ display: "flex", gap: 0, marginTop: 28, borderBottom: "1px solid #1a2030" }}>
+          {[
+            { id: "matrix", label: "Capability Matrix" },
+            { id: "decision", label: "Partner Selector" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                padding: "9px 20px",
+                fontSize: 11,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                background: "none",
+                border: "none",
+                borderBottom: `2px solid ${activeTab === tab.id ? "#4da6ff" : "transparent"}`,
+                color: activeTab === tab.id ? "#4da6ff" : "#3a4450",
+                cursor: "pointer",
+                fontFamily: "'DM Mono', monospace",
+                fontWeight: 500,
+                marginBottom: -1,
+                transition: "all 0.15s",
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* Decision Tree tab */}
+      {activeTab === "decision" && (
+        <DecisionTree />
+      )}
+
+      {/* Matrix tab */}
+      {activeTab === "matrix" && <>
 
       {/* Sort controls */}
       <div style={{ display: "flex", gap: 4, marginBottom: 16, alignItems: "center" }}>
@@ -423,7 +461,9 @@ export default function App() {
         <div style={{ fontSize: 10, color: "#2a3040" }}>{filtered.length} partners shown</div>
       </div>
 
-      {/* Detail drawer */}
+      </>}
+
+      {/* Detail drawer (available on both tabs) */}
       <PartnerDrawer partner={selectedPartner} onClose={() => setSelectedPartner(null)} />
     </div>
   );
